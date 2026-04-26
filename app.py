@@ -47,230 +47,213 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── CSS + fonts ───────────────────────────────────────────────────────────────
+# ── CSS + fonts + particle canvas — injected via JS bridge into parent document ──
 
-st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-<style>
-/* ── Streamlit chrome removal ── */
-#MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden !important; }
-.stDeployButton, [data-testid="stDecoration"] { display: none !important; }
-[data-testid="stHeader"] { display: none !important; }
-
-/* ── Design tokens ── */
-:root {
-  --bg:     #080c18;
-  --border: rgba(255,255,255,0.08);
-  --text:   rgba(255,255,255,0.88);
-  --muted:  rgba(255,255,255,0.38);
-  --a1:     #38bdf8;
-  --a2:     #a78bfa;
-}
-
-/* ── Background ── */
-html, body, .stApp,
-[data-testid="stAppViewContainer"],
-[data-testid="stMain"] {
-  background: var(--bg) !important;
-  color: var(--text) !important;
-  font-family: 'DM Sans', sans-serif !important;
-}
-
-/* ── Main content padding ── */
-[data-testid="stMain"] .block-container {
-  padding: 48px 52px 48px 52px !important;
-  max-width: 860px !important;
-}
-
-/* ── Sidebar ── */
-[data-testid="stSidebar"] {
-  background: rgba(8,12,24,0.95) !important;
-  border-right: 1px solid var(--border) !important;
-}
-[data-testid="stSidebar"] * { color: var(--text) !important; }
-section[data-testid="stSidebar"] > div:first-child { padding-top: 28px !important; }
-
-/* ── Radio — mode nav buttons ── */
-.stRadio > label { display: none !important; }
-div[data-baseweb="radio"] { flex-direction: column !important; gap: 4px !important; }
-div[data-baseweb="radio"] > label {
-  width: 100% !important; padding: 11px 14px !important; border-radius: 12px !important;
-  background: transparent !important; border: none !important; cursor: pointer !important;
-  transition: background 0.2s !important;
-}
-div[data-baseweb="radio"] > label:hover { background: rgba(255,255,255,0.06) !important; }
-div[data-baseweb="radio"] > label[data-checked="true"] {
-  background: rgba(56,189,248,0.1) !important;
-  border: 1px solid rgba(56,189,248,0.25) !important;
-}
-div[data-baseweb="radio"] > label span:last-child {
-  font-family: 'DM Sans', sans-serif !important;
-  font-size: 13px !important; font-weight: 700 !important;
-}
-
-/* ── Textarea ── */
-.stTextArea textarea {
-  background: rgba(255,255,255,0.04) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 12px !important; color: rgba(255,255,255,0.88) !important;
-  font-family: 'DM Sans', sans-serif !important; font-size: 14px !important;
-}
-.stTextArea textarea:focus { border-color: rgba(56,189,248,0.4) !important; box-shadow: none !important; }
-.stTextArea textarea::placeholder { color: rgba(255,255,255,0.2) !important; }
-.stTextArea > label { display: none !important; }
-
-/* ── Selectbox ── */
-.stSelectbox > label {
-  font-size: 11px !important; font-weight: 700 !important;
-  letter-spacing: 0.08em !important; color: rgba(255,255,255,0.3) !important;
-  font-family: 'DM Sans', sans-serif !important; text-transform: uppercase !important;
-}
-.stSelectbox [data-baseweb="select"] > div {
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 10px !important; color: rgba(255,255,255,0.82) !important;
-}
-[data-baseweb="popover"], [data-baseweb="menu"] {
-  background: #0f1629 !important; border: 1px solid rgba(255,255,255,0.1) !important;
-}
-[data-baseweb="option"] { background: #0f1629 !important; color: rgba(255,255,255,0.82) !important; }
-[data-baseweb="option"]:hover { background: rgba(56,189,248,0.1) !important; }
-
-/* ── Slider ── */
-.stSlider > label {
-  font-size: 11px !important; font-weight: 700 !important;
-  letter-spacing: 0.08em !important; color: rgba(255,255,255,0.3) !important;
-  font-family: 'DM Sans', sans-serif !important; text-transform: uppercase !important;
-}
-.stSlider [data-testid="stSliderTrack"] { background: rgba(255,255,255,0.1) !important; }
-.stSlider p { color: rgba(255,255,255,0.6) !important; font-family: 'DM Sans', sans-serif !important; }
-
-/* ── Buttons ── */
-.stButton > button {
-  border-radius: 12px !important; font-family: 'Space Grotesk', sans-serif !important;
-  font-size: 14px !important; font-weight: 700 !important; letter-spacing: 0.03em !important;
-  transition: opacity 0.2s, transform 0.15s !important;
-}
-.stButton > button[kind="primary"] {
-  background: linear-gradient(135deg, #38bdf8, #a78bfa) !important;
-  border: none !important; color: #fff !important;
-  box-shadow: 0 4px 24px rgba(56,189,248,0.25) !important;
-}
-.stButton > button[kind="primary"]:hover {
-  opacity: 0.9 !important; transform: translateY(-1px) !important;
-}
-.stButton > button[kind="secondary"] {
-  background: rgba(255,255,255,0.04) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 99px !important; color: rgba(255,255,255,0.5) !important;
-  font-size: 12px !important; padding: 5px 14px !important;
-}
-.stButton > button[kind="secondary"]:hover {
-  background: rgba(56,189,248,0.1) !important;
-  border-color: rgba(56,189,248,0.3) !important; color: #38bdf8 !important;
-}
-
-/* ── Spinner ── */
-.stSpinner > div > div { border-top-color: var(--a1) !important; }
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
-
-/* ── Custom component classes ── */
-.glass-card {
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 18px; padding: 24px; margin-bottom: 16px; backdrop-filter: blur(12px);
-}
-.song-card {
-  background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 18px; padding: 20px; margin-bottom: 12px; backdrop-filter: blur(12px);
-  transition: border-color 0.25s;
-}
-.song-card:hover { border-color: rgba(56,189,248,0.25); }
-.badge {
-  display: inline-block; padding: 2px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
-  margin-right: 6px;
-}
-.page-eyebrow {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
-  color: var(--a1); margin-bottom: 8px;
-}
-.page-title {
-  font-family: 'Space Grotesk', sans-serif; font-size: 36px; font-weight: 800; line-height: 1.1;
-  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.55));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  display: inline-block; margin-bottom: 10px;
-}
-.page-subtitle {
-  font-size: 14px; color: rgba(255,255,255,0.38); line-height: 1.6; margin-bottom: 32px;
-}
-.metric-mini {
-  background: rgba(255,255,255,0.03); border-radius: 8px; padding: 6px 10px;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-.metric-mini .mlabel { font-size: 9px; color: rgba(255,255,255,0.3); font-weight: 700; letter-spacing: 0.06em; }
-.metric-mini .mval   { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 600; margin-top: 2px; }
-details summary {
-  font-size: 11px; color: rgba(255,255,255,0.3); cursor: pointer;
-  list-style: none; margin-top: 12px; user-select: none;
-}
-details summary::-webkit-details-marker { display: none; }
-details[open] summary { color: rgba(255,255,255,0.5); }
-</style>
-""", unsafe_allow_html=True)
-
-# Particle canvas — injected into the parent window via iframe JS bridge
 components.html("""
 <script>
 (function () {
   const pd = window.parent.document;
-  if (pd.getElementById('mc-particles')) return;
-  const cv = pd.createElement('canvas');
-  cv.id = 'mc-particles';
-  Object.assign(cv.style, {
-    position: 'fixed', inset: '0', zIndex: '0', pointerEvents: 'none',
-    width: '100vw', height: '100vh',
-  });
-  pd.body.insertBefore(cv, pd.body.firstChild);
-  const ctx = cv.getContext('2d');
-  let W, H, ps;
-  function rsz() { W = cv.width = window.parent.innerWidth; H = cv.height = window.parent.innerHeight; }
-  function mkP() {
-    return { x: Math.random()*W, y: Math.random()*H,
-             vx: (Math.random()-.5)*.25, vy: (Math.random()-.5)*.25,
-             r: Math.random()*1.5+.5 };
+
+  // Fonts
+  if (!pd.getElementById('mc-fonts')) {
+    const lk = pd.createElement('link');
+    lk.id   = 'mc-fonts';
+    lk.rel  = 'stylesheet';
+    lk.href = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap';
+    pd.head.appendChild(lk);
   }
-  function init() { rsz(); ps = Array.from({length: 80}, mkP); }
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    for (const p of ps) {
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-    }
-    for (let i = 0; i < ps.length; i++) {
-      for (let j = i+1; j < ps.length; j++) {
-        const dx = ps[i].x-ps[j].x, dy = ps[i].y-ps[j].y, d = Math.sqrt(dx*dx+dy*dy);
-        if (d < 120) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(56,189,248,${.12*(1-d/120)})`;
-          ctx.lineWidth = .6;
-          ctx.moveTo(ps[i].x, ps[i].y); ctx.lineTo(ps[j].x, ps[j].y);
-          ctx.stroke();
-        }
+
+  // CSS
+  if (!pd.getElementById('mc-styles')) {
+    const st = pd.createElement('style');
+    st.id = 'mc-styles';
+    st.textContent = `
+      #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden !important; }
+      .stDeployButton, [data-testid="stDecoration"] { display: none !important; }
+      [data-testid="stHeader"] { display: none !important; }
+
+      :root {
+        --bg: #080c18; --border: rgba(255,255,255,0.08);
+        --text: rgba(255,255,255,0.88); --muted: rgba(255,255,255,0.38);
+        --a1: #38bdf8; --a2: #a78bfa;
       }
-    }
-    for (const p of ps) {
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(167,139,250,0.55)'; ctx.fill();
-    }
-    requestAnimationFrame(draw);
+
+      /* Dark base on body — canvas punches through transparent containers */
+      html, body { background: var(--bg) !important; }
+      .stApp,
+      [data-testid="stAppViewContainer"],
+      [data-testid="stMain"] {
+        background: transparent !important;
+        color: var(--text) !important;
+        font-family: 'DM Sans', sans-serif !important;
+      }
+
+      [data-testid="stMain"] .block-container {
+        padding: 48px 52px !important;
+        max-width: 860px !important;
+      }
+
+      /* sidebar background set via JS MutationObserver — no position overrides here */
+      section[data-testid="stSidebar"] > div:first-child { padding-top: 28px !important; }
+
+      .stRadio > label { display: none !important; }
+      div[data-baseweb="radio"] { flex-direction: column !important; gap: 4px !important; }
+      div[data-baseweb="radio"] > label {
+        width: 100% !important; padding: 11px 14px !important; border-radius: 12px !important;
+        background: transparent !important; border: none !important; cursor: pointer !important;
+        transition: background 0.2s !important;
+      }
+      div[data-baseweb="radio"] > label:hover { background: rgba(255,255,255,0.06) !important; }
+      div[data-baseweb="radio"] > label[data-checked="true"] {
+        background: rgba(56,189,248,0.1) !important;
+        border: 1px solid rgba(56,189,248,0.25) !important;
+      }
+      div[data-baseweb="radio"] > label span:last-child {
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 13px !important; font-weight: 700 !important;
+      }
+
+      /* Textarea — solid dark bg so white text is visible */
+      textarea,
+      .stTextArea textarea,
+      div[data-baseweb="textarea"] textarea {
+        background: #0f1629 !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        border-radius: 12px !important; color: #e2e8f0 !important;
+        font-family: 'DM Sans', sans-serif !important; font-size: 14px !important;
+        caret-color: #38bdf8 !important;
+      }
+      textarea:focus,
+      .stTextArea textarea:focus {
+        border-color: rgba(56,189,248,0.5) !important;
+        box-shadow: 0 0 0 2px rgba(56,189,248,0.15) !important;
+        outline: none !important;
+      }
+      textarea::placeholder,
+      .stTextArea textarea::placeholder { color: rgba(255,255,255,0.25) !important; }
+      .stTextArea > label { display: none !important; }
+
+      .stSelectbox > label {
+        font-size: 11px !important; font-weight: 700 !important;
+        letter-spacing: 0.08em !important; color: rgba(255,255,255,0.3) !important;
+        font-family: 'DM Sans', sans-serif !important; text-transform: uppercase !important;
+      }
+      .stSelectbox [data-baseweb="select"] > div {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 10px !important; color: rgba(255,255,255,0.82) !important;
+      }
+      [data-baseweb="popover"], [data-baseweb="menu"] {
+        background: #0f1629 !important; border: 1px solid rgba(255,255,255,0.1) !important;
+      }
+      [data-baseweb="option"] { background: #0f1629 !important; color: rgba(255,255,255,0.82) !important; }
+      [data-baseweb="option"]:hover { background: rgba(56,189,248,0.1) !important; }
+
+      .stSlider > label {
+        font-size: 11px !important; font-weight: 700 !important;
+        letter-spacing: 0.08em !important; color: rgba(255,255,255,0.3) !important;
+        font-family: 'DM Sans', sans-serif !important; text-transform: uppercase !important;
+      }
+      .stSlider [data-testid="stSliderTrack"] { background: rgba(255,255,255,0.1) !important; }
+      .stSlider p { color: rgba(255,255,255,0.6) !important; font-family: 'DM Sans', sans-serif !important; }
+
+      .stButton > button {
+        border-radius: 12px !important; font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 14px !important; font-weight: 700 !important; letter-spacing: 0.03em !important;
+        transition: opacity 0.2s, transform 0.15s !important;
+      }
+      .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #38bdf8, #a78bfa) !important;
+        border: none !important; color: #fff !important;
+        box-shadow: 0 4px 24px rgba(56,189,248,0.25) !important;
+      }
+      .stButton > button[kind="primary"]:hover { opacity: 0.9 !important; transform: translateY(-1px) !important; }
+      .stButton > button[kind="secondary"] {
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 99px !important; color: rgba(255,255,255,0.5) !important;
+        font-size: 12px !important; padding: 5px 14px !important;
+      }
+      .stButton > button[kind="secondary"]:hover {
+        background: rgba(56,189,248,0.1) !important;
+        border-color: rgba(56,189,248,0.3) !important; color: #38bdf8 !important;
+      }
+
+      .stSpinner > div > div { border-top-color: var(--a1) !important; }
+
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+      .glass-card {
+        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 18px; padding: 24px; margin-bottom: 16px; backdrop-filter: blur(12px);
+      }
+      .song-card {
+        background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 18px; padding: 20px; margin-bottom: 12px; backdrop-filter: blur(12px);
+        transition: border-color 0.25s;
+      }
+      .song-card:hover { border-color: rgba(56,189,248,0.25); }
+      .badge {
+        display: inline-block; padding: 2px 10px; border-radius: 99px;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+        margin-right: 6px;
+      }
+      .page-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; color: var(--a1); margin-bottom: 8px; }
+      .page-title {
+        font-family: 'Space Grotesk', sans-serif; font-size: 36px; font-weight: 800; line-height: 1.1;
+        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.55));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        display: inline-block; margin-bottom: 10px;
+      }
+      .page-subtitle { font-size: 14px; color: rgba(255,255,255,0.38); line-height: 1.6; margin-bottom: 32px; }
+      .metric-mini { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 6px 10px; border: 1px solid rgba(255,255,255,0.06); }
+      .metric-mini .mlabel { font-size: 9px; color: rgba(255,255,255,0.3); font-weight: 700; letter-spacing: 0.06em; }
+      .metric-mini .mval   { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 600; margin-top: 2px; }
+      details summary { font-size: 11px; color: rgba(255,255,255,0.3); cursor: pointer; list-style: none; margin-top: 12px; user-select: none; }
+      details summary::-webkit-details-marker { display: none; }
+      details[open] summary { color: rgba(255,255,255,0.5); }
+    `;
+    pd.head.appendChild(st);
   }
-  window.parent.addEventListener('resize', rsz);
-  init(); draw();
+
+  // Particle canvas
+  if (!pd.getElementById('mc-particles')) {
+    const cv = pd.createElement('canvas');
+    cv.id = 'mc-particles';
+    Object.assign(cv.style, { position:'fixed', inset:'0', zIndex:'0', pointerEvents:'none', width:'100vw', height:'100vh' });
+    pd.body.insertBefore(cv, pd.body.firstChild);
+    const ctx = cv.getContext('2d');
+    let W, H, ps;
+    function rsz() { W = cv.width = window.parent.innerWidth; H = cv.height = window.parent.innerHeight; }
+    function mkP() { return { x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25, r:Math.random()*1.5+.5 }; }
+    function init() { rsz(); ps = Array.from({length:80}, mkP); }
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      for (const p of ps) { p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0; }
+      for (let i=0;i<ps.length;i++) for (let j=i+1;j<ps.length;j++) {
+        const dx=ps[i].x-ps[j].x, dy=ps[i].y-ps[j].y, d=Math.sqrt(dx*dx+dy*dy);
+        if (d<120) { ctx.beginPath(); ctx.strokeStyle=`rgba(56,189,248,${.12*(1-d/120)})`; ctx.lineWidth=.6; ctx.moveTo(ps[i].x,ps[i].y); ctx.lineTo(ps[j].x,ps[j].y); ctx.stroke(); }
+      }
+      for (const p of ps) { ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle='rgba(167,139,250,0.55)'; ctx.fill(); }
+      requestAnimationFrame(draw);
+    }
+    window.parent.addEventListener('resize', rsz);
+    init(); draw();
+  }
+
+  // Direct sidebar styling — only background + border, no layout properties
+  function styleSidebar() {
+    const sb = pd.querySelector('[data-testid="stSidebar"]');
+    if (!sb) return;
+    sb.style.setProperty('background', '#0e1e38', 'important');
+    sb.style.setProperty('border-right', '1px solid rgba(56,189,248,0.35)', 'important');
+  }
+
+  styleSidebar();
+  new MutationObserver(styleSidebar).observe(pd.body, { childList: true, subtree: true });
+
 })();
 </script>
 """, height=0)
@@ -369,7 +352,7 @@ with st.sidebar:
   color:rgba(255,255,255,0.25);margin-bottom:10px;padding-left:4px">MODE</div>
 """, unsafe_allow_html=True)
 
-    mode = st.radio("", ["✦  Playlist Curator", "◈  Direct Search"],
+    mode = st.radio("Mode", ["✦  Playlist Curator", "◈  Direct Search"],
                     label_visibility="collapsed")
 
     st.markdown("""
