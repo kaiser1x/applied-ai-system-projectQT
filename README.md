@@ -2,6 +2,10 @@
 
 An AI-powered music recommendation web app that turns a free-text vibe description into a curated, narrated playlist. Built with Streamlit, Gemini 2.5 Flash, and a deterministic Python scoring engine.
 
+## Demo
+
+[Watch the demo on Loom](https://www.loom.com/share/49f82991e6934ec4b7d2c6c0abff6fc4)
+
 ---
 
 ## Original Project
