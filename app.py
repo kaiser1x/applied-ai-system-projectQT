@@ -68,9 +68,21 @@ components.html("""
     const st = pd.createElement('style');
     st.id = 'mc-styles';
     st.textContent = `
-      #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden !important; }
-      .stDeployButton, [data-testid="stDecoration"] { display: none !important; }
-      [data-testid="stHeader"] { display: none !important; }
+      #MainMenu, footer { visibility: hidden !important; }
+      .stDeployButton { display: none !important; }
+      /* header: transparent shell only — individual bad elements hidden via JS below */
+      [data-testid="stHeader"] {
+        background: transparent !important; box-shadow: none !important;
+        border: none !important;
+      }
+      /* canvas stays behind everything and never blocks clicks */
+      canvas { pointer-events: none !important; z-index: 0 !important; }
+      /* sidebar always above canvas */
+      [data-testid="stSidebar"] { z-index: 99 !important; }
+      /* hide sidebar collapse arrow — JS also targets this, belt+suspenders */
+      [data-testid="stSidebarCollapseButton"],
+      button[aria-label="Collapse sidebar"],
+      button[aria-label="collapse sidebar"] { display: none !important; }
 
       :root {
         --bg: #080c18; --border: rgba(255,255,255,0.08);
@@ -243,16 +255,35 @@ components.html("""
     init(); draw();
   }
 
-  // Direct sidebar styling — only background + border, no layout properties
-  function styleSidebar() {
+  // Surgical DOM cleanup — hide bad header chrome, lock sidebar permanently open.
+  const HIDE_IDS = ['stToolbar', 'stDecoration', 'stStatusWidget'];
+  function cleanDOM() {
+    // Sidebar background
     const sb = pd.querySelector('[data-testid="stSidebar"]');
-    if (!sb) return;
-    sb.style.setProperty('background', '#0e1e38', 'important');
-    sb.style.setProperty('border-right', '1px solid rgba(56,189,248,0.35)', 'important');
+    if (sb) {
+      sb.style.setProperty('background', '#0e1e38', 'important');
+      sb.style.setProperty('border-right', '1px solid rgba(56,189,248,0.35)', 'important');
+    }
+    // Hide specific header chrome without touching the container
+    HIDE_IDS.forEach(id => {
+      const el = pd.querySelector('[data-testid="' + id + '"]');
+      if (el) el.style.setProperty('display', 'none', 'important');
+    });
+    // Hide the sidebar's own collapse arrow (belt+suspenders: CSS + JS)
+    // so the sidebar can never be accidentally closed.
+    const COLLAPSE_SELECTORS = [
+      '[data-testid="stSidebarCollapseButton"]',
+      'button[aria-label="Collapse sidebar"]',
+      'button[aria-label="collapse sidebar"]',
+      '[data-testid="stSidebar"] > div:first-child > div:first-child > button',
+    ];
+    COLLAPSE_SELECTORS.forEach(sel => {
+      pd.querySelectorAll(sel).forEach(el => el.style.setProperty('display', 'none', 'important'));
+    });
   }
 
-  styleSidebar();
-  new MutationObserver(styleSidebar).observe(pd.body, { childList: true, subtree: true });
+  cleanDOM();
+  new MutationObserver(cleanDOM).observe(pd.body, { childList: true, subtree: true });
 
 })();
 </script>
