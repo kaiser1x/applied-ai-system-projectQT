@@ -17,10 +17,12 @@ Agentic workflow (three steps):
 import json
 import logging
 import os
+import time
 from typing import Optional
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors as genai_errors
 
 from src.recommender import load_songs, recommend_songs
 
@@ -28,6 +30,27 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 MODEL = "gemini-2.5-flash"
+FALLBACK_MODEL = "gemini-1.5-flash"
+
+
+def _generate_with_retry(client, model: str, contents: str, max_retries: int = 3) -> str:
+    """Call generate_content with exponential backoff on 503/overload errors.
+    Falls back to FALLBACK_MODEL if primary model stays overloaded."""
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(model=model, contents=contents)
+            return response.text.strip()
+        except Exception as exc:
+            is_overload = "503" in str(exc) or "overloaded" in str(exc).lower() or "unavailable" in str(exc).lower()
+            if is_overload and attempt < max_retries - 1:
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                logger.warning("Gemini overloaded (attempt %d/%d), retrying in %ds…", attempt + 1, max_retries, wait)
+                time.sleep(wait)
+                continue
+            if is_overload and model != FALLBACK_MODEL:
+                logger.warning("Primary model still overloaded after %d retries, trying fallback %s", max_retries, FALLBACK_MODEL)
+                return _generate_with_retry(client, FALLBACK_MODEL, contents, max_retries)
+            raise
 
 # Catalog values kept in sync with songs.csv so Gemini picks valid options.
 VALID_GENRES = [
@@ -129,12 +152,7 @@ class PlaylistAgent:
             vibe=vibe,
         )
 
-        response = self.client.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-        )
-
-        raw = response.text.strip()
+        raw = _generate_with_retry(self.client, MODEL, prompt)
         logger.debug("Plan step raw response: %s", raw)
 
         # Strip markdown code fences if present
@@ -192,11 +210,7 @@ class PlaylistAgent:
 
         prompt = NARRATE_PROMPT.format(vibe=vibe, song_list=song_lines)
 
-        response = self.client.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-        )
-        return response.text.strip()
+        return _generate_with_retry(self.client, MODEL, prompt)
 
     # ------------------------------------------------------------------
     # Main entry point
